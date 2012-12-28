@@ -5,6 +5,7 @@ config.cookie = {};
 config.sink = {};
 config.sink.s3 = {};
 config.sink.fluentd = {};
+config.sink.kafka = {};
 
 /**
  * Server configuration
@@ -30,8 +31,9 @@ config.cookie.domainName = undefined;
  * - s3 means SnowCannon will handle compression and upload to S3 itself
  * - stdout means SnowCannon will log events to stdout. Use your process control system (e.g. supervisord, daemontools, Angel) to handle the stdout eventstream
  * - fluentd means SnowCannon will use Fluentd (http://fluentd.org/) to collect events
+ * - kafka means SnowCannon will use Kafka () to collect events
  */
-config.sink.out = "stdout"; // Or "s3" or "fluentd"
+config.sink.out = "kafka"; // Or "s3" or "fluentd" or "kafka"
 
 /*
  * S3 configuration
@@ -65,6 +67,19 @@ config.sink.fluentd.mainTag = "snowplow";
 
 // What secondary tag should we use?
 config.sink.fluentd.subTag = "event"
+
+/**
+ * Kafka configuration
+ */
+
+// Kafka topic
+config.sink.kafka.topic = "social";
+
+// Kafka host
+config.sink.kafka.host = "localhost";
+
+// Kafka port
+config.sink.kafka.port = 9092;
 
 /**
  * All-important export of config.

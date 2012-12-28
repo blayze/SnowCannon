@@ -14,7 +14,7 @@
  *
  * Event collector server for SnowPlow
  * by Simon Rumble <simon@simonrumble.com>
- * 
+ *
  * For documentation, see README.md
  * For dependencies,  see package.json
  */
@@ -30,6 +30,10 @@ var config = require('./config');
 var cookieManager = require('./libs/cookie-manager');
 var responses = require('./libs/responses');
 var s3Sink = require('./libs/s3-sink');
+
+var prozess = require('Prozess');
+var ProzessProducer = prozess.Producer;
+var producer;
 
 var pjson = require('./package.json');
 
@@ -62,6 +66,12 @@ var logToSink = function(message) {
                 config.sink.fluentd.subTag,
                 json
             );
+        case 'kafka':
+            producer.connect(function(err) {
+                if (err) { throw err; }
+                console.log("producing for " + producer.topic);
+                producer.send(json);
+            });
         default:
     }
 }
@@ -70,15 +80,15 @@ var logToSink = function(message) {
  * Build the event to log
  */
 var buildEvent = function(request, cookies, timestamp) {
-    var event = [];    
+    var event = [];
     event.push( {
-        "hostname" : hostname,
-        "date" : timestamp.split('T')[0],
-        "time" : timestamp.split('T')[1].split('.')[0],
-        "uuid" : cookies.sp,
-        "url" : request.url,
-        "cookies" : cookies,
-        "headers" : request.headers,
+        "hostname"  : hostname,
+        "date"      : timestamp.split('T')[0],
+        "time"      : timestamp.split('T')[1].split('.')[0],
+        "uuid"      : cookies.sp,
+        "url"       : request.url,
+        "cookies"   : cookies,
+        "headers"   : request.headers,
         "collector" : collector
     });
     return event;
@@ -93,7 +103,7 @@ switch(config.sink.out) {
         // events down the pipe to the S3 bucket.
         setInterval(function () {
             s3Sink.upload(config.sink.s3)
-        }, config.sink.s3.flushSeconds * 1000);    
+        }, config.sink.s3.flushSeconds * 1000);
         break;
     case 'stdout':
         // No init needed
@@ -101,11 +111,16 @@ switch(config.sink.out) {
     case 'fluentd':
         // Configure the Fluentd logger
         fluentdSink.configure(config.sink.fluentd.mainTag, {
-            host: config.sink.fluentd.host,  
+            host: config.sink.fluentd.host,
             port: config.sink.fluentd.port,
             timeout: config.sink.fluentd.timeout
         });
         break;
+    case 'kafka':
+        producer = new ProzessProducer(config.sink.kafka.topic, {
+            host : config.sink.kafka.host,
+            port : config.sink.kafka.port
+        });
     default:
 }
 
@@ -162,7 +177,7 @@ if (cluster.isMaster) {
             case '/i':
                 var cookies = cookieManager.getCookies(request.headers);
                 var cookieContents = cookieManager.getCookieContents(config.cookie.domainName);
-                
+
                 var event = buildEvent(request, cookies, now);
                 logToSink(event);
 

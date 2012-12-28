@@ -35,8 +35,9 @@ SnowCannon depends on the following NPM packages:
 * [node-uuid] [node-uuid], generates UUIDs for user tracking
 * [measured] [measured], for SnowCannon performance metrics
 * [fluent-logger] [fluent-logger], for logging events to [Fluentd] [fluentd]
+* [Prozess] [Prozess], for logging events to [Kafka] [kafka]
 
-Note that _using_ Fluentd or Knox for logging is optional - but the dependencies are required.
+Note that _using_ Fluentd, Knox, or Prozess for logging is optional - but the dependencies are required.
 
 ## Getting started
 
@@ -72,6 +73,7 @@ SnowCannon supports three different event sinks:
 1. **stdout** - events (and only events) are printed to `stdout`. Use your process control system (e.g. supervisord or daemontools) to handle the `stdout` eventstream (e.g. uploading it to S3 or Google Storage). Also useful for debugging
 2. **s3** - events are collected by SnowCannon, and then regularly gzipped and uploaded to S3 by SnowCannon itself
 3. **fluentd** - events are sent by SnowCannon to [Fluentd] [fluentd], a lightweight log collector. Configure Fluentd to forward the events on to S3, Google Storage or equivalent
+4. **kafka** - events are sent by SnowCannon to [Kafka] [kafka]
 
 You can configure your event sink in the `config.js` file - to take each sink option in turn:
 
@@ -113,6 +115,15 @@ Depending on how you have configured Fluentd is configured, you should be able t
     etc/fluentd/fluent.conf
 
 Please note that setting up and configuring Fluentd is out of scope of this README - but the SnowPlow team has included instructions on this as part of their [SnowCannon Setup Guide] [snowcannon-setup-guide].
+
+### kafka
+
+To change the event sink to **kafka**, set the `config.sink.out` variable like so:
+
+```javascript
+config.sink.out = "kafka";
+```
+
 
 ## Performance
 
@@ -164,3 +175,4 @@ limitations under the License.
 [upstart]: http://upstart.ubuntu.com/
 [monit]: http://mmonit.com/monit/
 [god]: http://godrb.com/
+[prozess]: https://github.com/cainus/Prozess
