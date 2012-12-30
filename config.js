@@ -73,7 +73,7 @@ config.sink.fluentd.subTag = "event"
  */
 
 // Kafka topic
-config.sink.kafka.topic = "social";
+config.sink.kafka.topic = "events";
 
 // Kafka host
 config.sink.kafka.host = "localhost";
